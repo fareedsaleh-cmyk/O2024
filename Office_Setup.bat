@@ -12,10 +12,21 @@ echo Creating temporary workspace...
 set "WorkDir=%SystemDrive%\Office2024Temp"
 if not exist "%WorkDir%" mkdir "%WorkDir%"
 
-echo Downloading components from GitHub repository...
-powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%SetupURL%' -OutFile '%WorkDir%\setup.exe'"
-powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%XmlURL%' -OutFile '%WorkDir%\configuration.xml'"
+echo.
+echo Downloading components from GitHub via Windows BITS...
+:: Using native Windows BITS instead of PowerShell to bypass TLS/Internet Explorer errors
+bitsadmin /transfer "DownloadSetup" /priority foreground "%SetupURL%" "%WorkDir%\setup.exe"
+bitsadmin /transfer "DownloadXML" /priority foreground "%XmlURL%" "%WorkDir%\configuration.xml"
 
+:: Double check if the files actually arrived
+if not exist "%WorkDir%\setup.exe" (
+    echo.
+    echo ERROR: setup.exe failed to download.
+    pause
+    exit /b 1
+)
+
+echo.
 echo Launching Office LTSC 2024 Installation...
 echo The Microsoft installer UI will appear shortly.
 

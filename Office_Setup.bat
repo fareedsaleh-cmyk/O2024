@@ -43,13 +43,14 @@ set "WorkDir=%SystemDrive%\Office2024Temp"
 if not exist "%WorkDir%" mkdir "%WorkDir%"
 
 echo.
-echo Downloading components from GitHub via Windows BITS...
-bitsadmin /transfer "DownloadSetup" /priority foreground "%SetupURL%" "%WorkDir%\setup.exe"
-bitsadmin /transfer "DownloadXML" /priority foreground "%XmlURL%" "%WorkDir%\configuration.xml"
+echo Downloading components from GitHub via curl...
+:: Using native curl to bypass broken Windows BITS services and PowerShell blocks
+curl -L -s -o "%WorkDir%\setup.exe" "%SetupURL%"
+curl -L -s -o "%WorkDir%\configuration.xml" "%XmlURL%"
 
 if not exist "%WorkDir%\setup.exe" (
     echo.
-    echo ERROR: setup.exe failed to download.
+    echo ERROR: setup.exe failed to download via curl.
     pause
     exit /b 1
 )

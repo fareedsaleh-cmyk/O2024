@@ -2,6 +2,36 @@
 setlocal
 
 :: ==========================================
+:: AUTOMATIC ADMINISTRATIVE ELEVATION
+:: ==========================================
+:init
+setlocal DisableDelayedExpansion
+set "batchPath=%~0"
+for %%k in (%0) do set batchName=%%~nk
+set "vbsGetPrivileges=%temp%\OEgetPriv%batchName%.vbs"
+setlocal EnableDelayedExpansion
+
+:checkPrivileges
+NET FILE 1>NUL 2>NUL
+if '%errorlevel%' == '0' ( goto gotPrivileges ) else ( goto getPrivileges )
+
+:getPrivileges
+if '%1'=='ELEV' (echo ELEVATION FAILURE & shift & goto gotPrivileges)
+echo Set UAC = CreateObject^("Shell.Application"^) > "%vbsGetPrivileges%"
+echo args = "" >> "%vbsGetPrivileges%"
+echo For Each strArg in WScript.Arguments >> "%vbsGetPrivileges%"
+echo args = args ^& " " ^& strArg >> "%vbsGetPrivileges%"
+echo Next >> "%vbsGetPrivileges%"
+echo UAC.ShellExecute "!batchPath!", args, "", "runas", 1 >> "%vbsGetPrivileges%"
+del "%vbsGetPrivileges%" 2>nul
+exit /B
+
+:gotPrivileges
+setlocal & cd /d %~dp0
+:: ==========================================
+
+
+:: ==========================================
 :: CHANGE THESE TO YOUR ACTUAL GITHUB RAW LINKS
 :: ==========================================
 set "SetupURL=https://raw.githubusercontent.com/fareedsaleh-cmyk/O2024/refs/heads/main/setup.exe"
@@ -14,11 +44,9 @@ if not exist "%WorkDir%" mkdir "%WorkDir%"
 
 echo.
 echo Downloading components from GitHub via Windows BITS...
-:: Using native Windows BITS instead of PowerShell to bypass TLS/Internet Explorer errors
 bitsadmin /transfer "DownloadSetup" /priority foreground "%SetupURL%" "%WorkDir%\setup.exe"
 bitsadmin /transfer "DownloadXML" /priority foreground "%XmlURL%" "%WorkDir%\configuration.xml"
 
-:: Double check if the files actually arrived
 if not exist "%WorkDir%\setup.exe" (
     echo.
     echo ERROR: setup.exe failed to download.
@@ -30,14 +58,11 @@ echo.
 echo Launching Office LTSC 2024 Installation...
 echo The Microsoft installer UI will appear shortly.
 
-:: Bypass network origin warnings since it's local now
 set SEE_MASK_NOZONECHECKS=1
 
-:: Run the setup
 cd /d "%WorkDir%"
 setup.exe /configure configuration.xml
 
-:: Restore warning settings
 set SEE_MASK_NOZONECHECKS=
 
 echo.

@@ -1,13 +1,15 @@
 <Configuration ID="780028d5-f750-48db-b3ca-0887fcf9e18b">
   <Add OfficeClientEdition="64" Channel="PerpetualVL2024" AllowCdnFallback="TRUE" MigrateArch="TRUE">
-    <Product ID="ProPlus2024Volume" PIDKEY="QW964-JNHM2-47RQF-C94XX-KQFPQ">
+    <Product ID="ProPlus2024Volume" PIDKEY="">
       <Language ID="en-us" />
-      <Language ID="ar-sa" />
       <ExcludeApp ID="Access" />
       <ExcludeApp ID="Lync" />
       <ExcludeApp ID="OneDrive" />
       <ExcludeApp ID="OneNote" />
       <ExcludeApp ID="Publisher" />
+    </Product>
+    <Product ID="ProofingTools">
+      <Language ID="ar-sa" />
     </Product>
   </Add>
   <Property Name="SharedComputerLicensing" Value="0" />
